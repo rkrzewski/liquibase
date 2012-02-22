@@ -1,0 +1,16 @@
+Private-Package: liquibase.samples.osgi
+Bundle-Activator: liquibase.samples.osgi.Activator
+Include-Resource: src/main/resources
+Liquibase-Resources: .
+-runfw: org.eclipse.osgi;version='[3.7.1.R37x_v20110808-1106,3.7.1.R37x_v20110808-1106]'
+-runee: JavaSE-1.6
+-runrequire: bundle:(symbolicname=org.eclipse.gemini.dbaccess.derby),\
+	bundle:(symbolicname=org.apache.felix.shell.tui),\
+	bundle:(symbolicname=liquibase-core-osgi)
+-runbundles: osgi.enterprise;version='[4.2.0,4.2.1)',\
+	org.eclipse.gemini.dbaccess.derby;version='[1.1.0,1.1.1)',\
+	liquibase-core-osgi;version=latest,\
+	org.apache.derby;version='[10.8.2,10.8.3)',\
+	org.eclipse.gemini.dbaccess.util;version='[1.1.0,1.1.1)',\
+	org.apache.felix.shell.tui;version='[1.4.1,1.4.2)',\
+	org.apache.felix.shell;version='[1.4.2,1.4.3)'
