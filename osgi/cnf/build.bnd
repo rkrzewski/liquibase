@@ -1,0 +1,16 @@
+# Place your specific settings here.
+
+# Default settings are in ext/*.bnd and they will be overridden by anything
+# you specify in this file.
+
+Git-Descriptor: ${system-allow-fail;git describe --dirty --always}
+Git-SHA: ${system-allow-fail;git rev-list -1 HEAD}
+
+bin:          target/classes
+target-dir:   target/bnd
+
+-plugin:        aQute.lib.deployer.obr.LocalOBR;name='Local Repository';local=${repo};locations='http://bundles.bndtools.org.s3.amazonaws.com/repository.xml',\
+                aQute.lib.deployer.obr.OBR;name='Build Repository';mode=build;locations='http://buildrepo.bndtools.org.s3.amazonaws.com/repository.xml',\
+                aQute.lib.deployer.obr.LocalOBR;name='Release';local=${releaserepo},\
+                org.osgi.impl.bundle.bindex.BundleIndexerImpl;path:=${repo}/org.osgi.impl.bundle.bindex/org.osgi.impl.bundle.bindex-2.2.0.jar,\
+                aQute.lib.deployer.obr.OBR;cache=false;locations=file:${user.home}/.m2/repository/repository.xml;name=Local Maven repository;readonly=true
