@@ -39,7 +39,7 @@ public class ServiceLocator {
         setResourceAccessor(new ClassLoaderResourceAccessor());
     }
 
-    private ServiceLocator(ResourceAccessor accessor) {
+    protected ServiceLocator(ResourceAccessor accessor) {
         setResourceAccessor(accessor);
     }
 
@@ -189,6 +189,10 @@ public class ServiceLocator {
 
     public static void reset() {
         instance = new ServiceLocator();
+    }
+    
+    public static void setServiceLocator(ServiceLocator newInstance) {
+    	instance = newInstance;
     }
 
     protected Logger getLogger() {
