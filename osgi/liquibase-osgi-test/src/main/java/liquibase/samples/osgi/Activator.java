@@ -5,8 +5,6 @@ import java.io.Writer;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import javax.sql.DataSource;
 
@@ -16,105 +14,59 @@ import liquibase.integration.osgi.LiquibaseService;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Filter;
-import org.osgi.framework.ServiceReference;
 import org.osgi.service.jdbc.DataSourceFactory;
-import org.osgi.util.tracker.ServiceTracker;
-import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
-public class Activator implements BundleActivator, ServiceTrackerCustomizer {
-
-	private static final String JDBC_URL = "jdbc:derby:target/derby/db;create=true";
-
-	private static final String CHANGELOG = "META-INF/liquibase/changelog.xml";
-
-	private static final String LS_FILTER = "(objectclass=liquibase.integration.osgi.LiquibaseService)";
+public class Activator implements BundleActivator {
 
 	private static final String DSF_FILTER = "(&(objectclass=org.osgi.service.jdbc.DataSourceFactory)"
 			+ "(osgi.jdbc.driver.class=org.apache.derby.jdbc.EmbeddedDriver)"
 			+ "(osgi.jdbc.driver.version=4.0))";
 
-	private Executor executor = Executors.newSingleThreadExecutor();
+	private static final String LS_FILTER = "(objectclass=liquibase.integration.osgi.LiquibaseService)";
 
-	private Filter lsFilter;
+	private static final String JDBC_URL = "jdbc:derby:target/derby/db;create=true";
 
-	private ServiceTracker lsTracker;
+	private static final String CHANGELOG = "META-INF/liquibase/changelog.xml";
 
-	private LiquibaseService ls;
-
-	private Filter dsfFilter;
-
-	private ServiceTracker dsfTracker;
-
-	private DataSourceFactory dsf;
-
-	private boolean started = false;
-
-	private BundleContext context;
-
-	// BundleActivator
+	private MultiServiceTracker<State, Process> tracker;
 
 	public void start(BundleContext context) throws Exception {
-		this.context = context;
-		lsFilter = context.createFilter(LS_FILTER);
-		dsfFilter = context.createFilter(DSF_FILTER);
-		lsTracker = new ServiceTracker(context, lsFilter, this);
-		dsfTracker = new ServiceTracker(context, dsfFilter, this);
-		lsTracker.open();
-		dsfTracker.open();
+		Filter filter = context.createFilter("(|" + DSF_FILTER + LS_FILTER
+				+ ")");
+		tracker = new MultiServiceTracker<State, Process>(context, filter,
+				new State(), new Process());
+		tracker.open();
 	}
 
 	public void stop(BundleContext context) throws Exception {
-		dsfTracker.close();
-		lsTracker.close();
-		started = false;
+		tracker.close();
 	}
 
-	// ServiceTrackerCustomizer
+	private static class State extends MultiServiceTracker.State {
+		
+		private DataSourceFactory dsf;
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Object addingService(ServiceReference reference) {
-		Object object = context.getService(reference);
-		if (lsFilter.match(reference)) {
-			ls = (LiquibaseService) object;
-		}
-		if (dsfFilter.match(reference)) {
-			dsf = (DataSourceFactory) object;
-		}
-		if (!started) {
-			executor.execute(new RunUpdate());
-		}
-		return object;
+		private LiquibaseService ls;
 	}
 
-	@SuppressWarnings("rawtypes")
-	public void modifiedService(ServiceReference reference, Object service) {
-		// ignore
-	}
+	private static class Process extends MultiServiceTracker.Process<State> {
 
-	@SuppressWarnings("rawtypes")
-	public void removedService(ServiceReference reference, Object service) {
-		context.ungetService(reference);
-	}
+		private boolean started;
 
-	//
-
-	private class RunUpdate implements Runnable {
-
-		public void run() {
-			if (ls != null && dsf != null) {
-				runUpdate(ls, dsf);
+		@Override
+		public void enter(State state) {
+			if (state.dsf != null && state.ls != null && !started) {
+				runUpdate(state.dsf, state.ls);
 				started = true;
 			}
 		}
-		
-		private void runUpdate(LiquibaseService ls, DataSourceFactory dsf) {
+
+		private void runUpdate(DataSourceFactory dsf, LiquibaseService ls) {
 			Connection conn = null;
 			try {
 				conn = getConnection(dsf);
 				LiquibaseFacade liquibase = ls.getInstance(CHANGELOG, conn);
 				Writer out = new OutputStreamWriter(System.out);
-				liquibase.reportLocks(out);
-				liquibase.forceReleaseLocks();
 				liquibase.update(null, out);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -128,8 +80,9 @@ public class Activator implements BundleActivator, ServiceTrackerCustomizer {
 				}
 			}
 		}
-		
-		private Connection getConnection(DataSourceFactory dsf) throws SQLException {
+
+		private Connection getConnection(DataSourceFactory dsf)
+				throws SQLException {
 			Properties props = new Properties();
 			props.put(DataSourceFactory.JDBC_URL, JDBC_URL);
 			DataSource ds = dsf.createDataSource(props);
