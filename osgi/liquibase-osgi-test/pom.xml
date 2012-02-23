@@ -27,6 +27,11 @@
 			<version>${project.version}</version>
 			<type>bundle</type>
 		</dependency>
+		<dependency>
+		    <groupId>biz.aQute</groupId>
+		    <artifactId>bndlib</artifactId>
+		    <version>1.50.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
