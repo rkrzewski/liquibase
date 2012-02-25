@@ -3,29 +3,35 @@ package liquibase.samples.osgi;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.sql.Connection;
-import java.sql.SQLException;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.Properties;
 
 import javax.sql.DataSource;
 
 import liquibase.integration.osgi.Liquibase;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.jdbc.DataSourceFactory;
 
 import aQute.bnd.annotation.component.Activate;
 import aQute.bnd.annotation.component.Component;
+import aQute.bnd.annotation.component.Deactivate;
 import aQute.bnd.annotation.component.Reference;
 
 @Component
-public class TestComponent {
+public class DataSourceProvider {
 
 	private static final String JDBC_URL = "jdbc:derby:target/derby/db;create=true";
 
 	private static final String CHANGELOG = "META-INF/liquibase/changelog.xml";
-	
+
 	private Liquibase liquibase;
 
 	private DataSourceFactory dsf;
+	
+	private ServiceRegistration<DataSource> dsReg;
 
 	@Reference
 	protected void setLiquibaseService(Liquibase liquibase) {
@@ -37,33 +43,32 @@ public class TestComponent {
 	protected void setDataSourceFactory(DataSourceFactory dsf) {
 		this.dsf = dsf;
 	}
-	
+
 	@Activate
-	protected void activate() {
-		Connection conn = null;
+	protected void activate(BundleContext context) {
+		Properties dsfProps = new Properties();
+		dsfProps.put(DataSourceFactory.JDBC_URL, JDBC_URL);
 		try {
-			conn = getConnection(dsf);
+			DataSource ds = dsf.createDataSource(dsfProps);
+			Connection conn = ds.getConnection();
+
 			liquibase.open(CHANGELOG, conn);
 			Writer out = new OutputStreamWriter(System.out);
 			liquibase.update(null, out);
+			conn.close();
+			
+			Dictionary<String,Object> dsProps = new Hashtable<String,Object>();
+			dsProps.put("liquibase.updated", "true");
+			dsReg = context.registerService(DataSource.class, ds, dsProps);
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			if (conn != null) {
-				try {
-					conn.close();
-				} catch (SQLException e) {
-					// suppress
-				}
-			}
 		}
 	}
-
-	private Connection getConnection(DataSourceFactory dsf)
-			throws SQLException {
-		Properties props = new Properties();
-		props.put(DataSourceFactory.JDBC_URL, JDBC_URL);
-		DataSource ds = dsf.createDataSource(props);
-		return ds.getConnection();
+	
+	@Deactivate
+	protected void deactivate(BundleContext context) {
+		if(dsReg != null) {
+			dsReg.unregister();
+		}
 	}
 }
