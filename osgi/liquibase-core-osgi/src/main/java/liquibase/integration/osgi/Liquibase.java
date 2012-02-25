@@ -1,6 +1,7 @@
 package liquibase.integration.osgi;
 
 import java.io.Writer;
+import java.sql.Connection;
 import java.util.Date;
 
 import liquibase.exception.LiquibaseException;
@@ -14,9 +15,39 @@ import liquibase.exception.LiquibaseException;
  * interface in a way that does not requires minimal number of package imports.
  * </p>
  * 
+ * <p>
+ * Liquibase Core bundle registers a service of this class using ServiceFactory
+ * mechanism (see OSGi Core Specification ch. 5.6). This means that each
+ * requesting bundle will receive a distinct instance of the service object. The
+ * service object is aware of the client bundle and will use the bundles's
+ * classloader to locate the requested changelog file. The framework caches the
+ * service object therefore if a bundle acquires it more than once care must be
+ * taken to schedule the operations appropriately.
+ * </p>
+ * 
  * @author rafal.krzewski@caltha.pl
  */
-public interface LiquibaseFacade {
+public interface Liquibase {
+
+	/**
+	 * Prepare facade object for use.
+	 * 
+	 * <p>
+	 * This method must be called before any other method is used.
+	 * </p>
+	 * 
+	 * @param changeLogFile
+	 *            change log file. The path is relative to the client bundle's
+	 *            classpath.
+	 * @param connection
+	 *            JDBC connection.
+	 * 
+	 * @throws LiquibaseException
+	 *             when facade initialization fails, e.g. database is not
+	 *             supported.
+	 */
+	void open(String changeLogFile, Connection connection)
+			throws LiquibaseException;
 
 	void update(String contexts, Writer output) throws LiquibaseException;
 

@@ -8,8 +8,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import liquibase.integration.osgi.LiquibaseFacade;
-import liquibase.integration.osgi.LiquibaseService;
+import liquibase.integration.osgi.Liquibase;
 
 import org.osgi.service.jdbc.DataSourceFactory;
 
@@ -24,13 +23,13 @@ public class TestComponent {
 
 	private static final String CHANGELOG = "META-INF/liquibase/changelog.xml";
 	
-	private LiquibaseService ls;
+	private Liquibase liquibase;
 
 	private DataSourceFactory dsf;
 
 	@Reference
-	protected void setLiquibaseService(LiquibaseService ls) {
-		this.ls = ls;
+	protected void setLiquibaseService(Liquibase liquibase) {
+		this.liquibase = liquibase;
 	}
 
 	@Reference(target = "(&(osgi.jdbc.driver.class=org.apache.derby.jdbc.EmbeddedDriver)"
@@ -44,7 +43,7 @@ public class TestComponent {
 		Connection conn = null;
 		try {
 			conn = getConnection(dsf);
-			LiquibaseFacade liquibase = ls.getInstance(CHANGELOG, conn);
+			liquibase.open(CHANGELOG, conn);
 			Writer out = new OutputStreamWriter(System.out);
 			liquibase.update(null, out);
 		} catch (Exception e) {

@@ -2,8 +2,9 @@ package liquibase.integration.osgi.impl;
 
 import java.util.Hashtable;
 
-import liquibase.integration.osgi.LiquibaseService;
+import liquibase.integration.osgi.Liquibase;
 import liquibase.resource.ResourceAccessor;
+import liquibase.servicelocator.LiquibaseService;
 import liquibase.servicelocator.ServiceLocator;
 
 import org.osgi.framework.BundleActivator;
@@ -19,9 +20,7 @@ public class Activator implements BundleActivator {
 
 	private ExtensionBundleTracker extensionBundleTracker;
 
-	private ResourceBundleTracker resourceBundleTracker;
-
-	private ServiceRegistration<LiquibaseService> registration;
+	private ServiceRegistration<?> registration;
 
 	/**
 	 * Opens extension and resource bundle trackers and registers
@@ -33,18 +32,14 @@ public class Activator implements BundleActivator {
 	public void start(BundleContext context) throws Exception {
 		extensionBundleTracker = new ExtensionBundleTracker(context);
 		extensionBundleTracker.open();
-		resourceBundleTracker = new ResourceBundleTracker(context);
-		resourceBundleTracker.open();
 
-		ResourceAccessor resourceAccessor = new OsgiResourceAccessor(
-				resourceBundleTracker);
 		ServiceLocator serviceLocator = new OsgiServiceLocator(
-				extensionBundleTracker, resourceAccessor);
+				extensionBundleTracker);
 		ServiceLocator.setServiceLocator(serviceLocator);
 
-		LiquibaseService service = new LiquibaseServiceImpl(resourceAccessor);
-		registration = context.registerService(LiquibaseService.class, service,
-				new Hashtable<String, Object>());
+		registration = context.registerService(
+				new String[] { Liquibase.class.getName() },
+				new LiquibaseFactory(), new Hashtable<String, Object>());
 	}
 
 	/**
@@ -55,7 +50,6 @@ public class Activator implements BundleActivator {
 	 */
 	public void stop(BundleContext context) throws Exception {
 		extensionBundleTracker.close();
-		resourceBundleTracker.close();
 		registration.unregister();
 	}
 }

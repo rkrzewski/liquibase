@@ -7,12 +7,12 @@ import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.sql.Connection;
 import java.util.Date;
 
 import liquibase.Liquibase;
-import liquibase.database.DatabaseConnection;
+import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
-import liquibase.integration.osgi.LiquibaseFacade;
 import liquibase.resource.ResourceAccessor;
 
 /**
@@ -20,78 +20,104 @@ import liquibase.resource.ResourceAccessor;
  * 
  * @author rafal.krzewski@caltha.pl
  */
-public class LiquibaseFacadeImpl implements LiquibaseFacade {
+public class LiquibaseImpl implements liquibase.integration.osgi.Liquibase {
 
-	private final Liquibase facade;
+	private Liquibase facade;
 
-	public LiquibaseFacadeImpl(String changeLogFile,
-			ResourceAccessor resourceAccessor, DatabaseConnection database)
+	private final ResourceAccessor resourceAccessor;
+
+	public LiquibaseImpl(ResourceAccessor resourceAccessor) {
+		this.resourceAccessor = resourceAccessor;
+	}
+
+	public void open(String changeLogFile, Connection connection)
 			throws LiquibaseException {
-		this.facade = new Liquibase(changeLogFile, resourceAccessor, database);
+		this.facade = new Liquibase(changeLogFile, resourceAccessor,
+				new JdbcConnection(connection));
+	}
+
+	private void checkFacade() throws LiquibaseException {
+		if (this.facade == null) {
+			throw new LiquibaseException("facade not ready, use open() first");
+		}
 	}
 
 	public void update(String contexts, Writer output)
 			throws LiquibaseException {
+		checkFacade();
 		facade.update(contexts, output);
 	}
 
 	public void update(int changesToApply, String contexts, Writer output)
 			throws LiquibaseException {
+		checkFacade();
 		facade.update(changesToApply, contexts, output);
 	}
 
 	public void rollback(int changesToRollback, String contexts, Writer output)
 			throws LiquibaseException {
+		checkFacade();
 		facade.rollback(changesToRollback, contexts, output);
 	}
 
 	public void rollback(String tagToRollBackTo, String contexts, Writer output)
 			throws LiquibaseException {
+		checkFacade();
 		facade.rollback(tagToRollBackTo, contexts, output);
 	}
 
 	public void rollback(Date dateToRollBackTo, String contexts, Writer output)
 			throws LiquibaseException {
+		checkFacade();
 		facade.rollback(dateToRollBackTo, contexts, output);
 	}
 
 	public void changeLogSync(String contexts, Writer output)
 			throws LiquibaseException {
+		checkFacade();
 		facade.changeLogSync(contexts, output);
 	}
 
 	public void markNextChangeSetRan(String contexts, Writer output)
 			throws LiquibaseException {
+		checkFacade();
 		facade.markNextChangeSetRan(contexts, output);
 	}
 
 	public void futureRollbackSQL(String contexts, Writer output)
 			throws LiquibaseException {
+		checkFacade();
 		facade.futureRollbackSQL(contexts, output);
 	}
 
 	public void dropAll() throws LiquibaseException {
+		checkFacade();
 		facade.dropAll();
 	}
 
 	public void dropAll(String... schemata) throws LiquibaseException {
+		checkFacade();
 		facade.dropAll(schemata);
 	}
 
 	public void tag(String tagString) throws LiquibaseException {
+		checkFacade();
 		facade.tag(tagString);
 	}
 
 	public void updateTestingRollback(String contexts)
 			throws LiquibaseException {
+		checkFacade();
 		facade.updateTestingRollback(contexts);
 	}
 
 	public boolean isSafeToRunMigration() throws LiquibaseException {
+		checkFacade();
 		return facade.isSafeToRunMigration();
 	}
 
 	public void reportLocks(Writer output) throws LiquibaseException {
+		checkFacade();
 		// Liquibase.reportLocks takes a PrintStream, but we're taking a Writer
 		// for consistency.
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -101,7 +127,7 @@ public class LiquibaseFacadeImpl implements LiquibaseFacade {
 		ByteBuffer bBuff = ByteBuffer.allocate(baos.size());
 		bBuff.put(baos.toByteArray());
 		CharBuffer cBuff = Charset.defaultCharset().decode(bBuff);
-		
+
 		try {
 			output.append(cBuff);
 		} catch (IOException e) {
@@ -110,24 +136,29 @@ public class LiquibaseFacadeImpl implements LiquibaseFacade {
 	}
 
 	public void forceReleaseLocks() throws LiquibaseException {
+		checkFacade();
 		facade.forceReleaseLocks();
 	}
 
 	public void reportStatus(boolean verbose, String contexts, Writer output)
 			throws LiquibaseException {
+		checkFacade();
 		facade.reportStatus(verbose, contexts, output);
 	}
 
 	public void clearCheckSums() throws LiquibaseException {
+		checkFacade();
 		facade.clearCheckSums();
 	}
 
 	public void validate() throws LiquibaseException {
+		checkFacade();
 		facade.validate();
 	}
 
 	public void setChangeLogParameter(String key, Object value)
 			throws LiquibaseException {
+		checkFacade();
 		facade.setChangeLogParameter(key, value);
 	}
 }
