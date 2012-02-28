@@ -1,6 +1,5 @@
 Private-Package: liquibase.samples.osgi
 Include-Resource: src/main/resources
-Liquibase-Resources: .
 Service-Component: *
 -runfw: org.eclipse.osgi;version='[3.7.1.R37x_v20110808-1106,3.7.1.R37x_v20110808-1106]'
 -runee: JavaSE-1.6
