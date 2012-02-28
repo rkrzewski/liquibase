@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-2.0.xsd">
+
+    <changeSet id="1" author="rkrzewski">
+        <createTable tableName="account">
+            <column name="id" type="integer">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="balance" type="numeric">
+                <constraints nullable="false" />
+            </column>
+            <column name="datecreated" type="date">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <createTable tableName="customer">
+            <column name="id" type="integer">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="fname" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+            <column name="lname" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+            <column name="addr" type="varchar(50)">
+                <constraints nullable="false" />
+            </column>
+            <column name="account_id" type="integer">
+                <constraints nullable="false" references="account(id)"
+                    foreignKeyName="fk_customer_account" />
+            </column>
+        </createTable>
+
+        <createTable tableName="acct_txn">
+            <column name="id" type="integer">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="account_id" type="integer">
+                <constraints nullable="false" references="account(id)"
+                    foreignKeyName="fk_transaction_account" />
+            </column>
+            <column name="op" type="varchar(10)">
+                <constraints nullable="false" />
+            </column>
+            <column name="amount" type="numeric">
+                <constraints nullable="false" />
+            </column>
+            <column name="txtime" type="date">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="rkrzewski">
+        <createTable tableName="SEQUENCE">
+            <column name="seq_name" type="varchar(64)">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="seq_count" type="integer">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+        <insert tableName="SEQUENCE">
+            <column name="seq_name" value="SEQ_GEN" />
+            <column name="seq_count" valueNumeric="0" />
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
