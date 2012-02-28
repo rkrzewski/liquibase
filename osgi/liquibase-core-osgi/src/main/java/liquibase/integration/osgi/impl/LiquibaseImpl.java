@@ -8,9 +8,15 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import liquibase.Liquibase;
+import liquibase.changelog.ChangeSet;
+import liquibase.database.DatabaseConnection;
+import liquibase.database.jvm.DerbyConnection;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.ResourceAccessor;
@@ -33,7 +39,21 @@ public class LiquibaseImpl implements liquibase.integration.osgi.Liquibase {
 	public void open(String changeLogFile, Connection connection)
 			throws LiquibaseException {
 		this.facade = new Liquibase(changeLogFile, resourceAccessor,
-				new JdbcConnection(connection));
+				createConnection(connection));
+	}
+
+	private DatabaseConnection createConnection(Connection connection)
+			throws LiquibaseException {
+		try {
+			String productName = connection.getMetaData()
+					.getDatabaseProductName();
+			if (productName.equals("Apache Derby")) {
+				return new DerbyConnection(connection);
+			}
+		} catch (SQLException e) {
+			throw new LiquibaseException("database metatadata check failed", e);
+		}
+		return new JdbcConnection(connection);
 	}
 
 	private void checkFacade() throws LiquibaseException {
@@ -42,10 +62,21 @@ public class LiquibaseImpl implements liquibase.integration.osgi.Liquibase {
 		}
 	}
 
+	public void update(String contexts) throws LiquibaseException {
+		checkFacade();
+		facade.update(contexts);
+	}
+
 	public void update(String contexts, Writer output)
 			throws LiquibaseException {
 		checkFacade();
 		facade.update(contexts, output);
+	}
+
+	public void update(int changesToApply, String contexts)
+			throws LiquibaseException {
+		checkFacade();
+		facade.update(changesToApply, contexts);
 	}
 
 	public void update(int changesToApply, String contexts, Writer output)
@@ -54,16 +85,34 @@ public class LiquibaseImpl implements liquibase.integration.osgi.Liquibase {
 		facade.update(changesToApply, contexts, output);
 	}
 
+	public void rollback(int changesToRollback, String contexts)
+			throws LiquibaseException {
+		checkFacade();
+		facade.rollback(changesToRollback, contexts);
+	}
+
 	public void rollback(int changesToRollback, String contexts, Writer output)
 			throws LiquibaseException {
 		checkFacade();
 		facade.rollback(changesToRollback, contexts, output);
 	}
 
+	public void rollback(String tagToRollBackTo, String contexts)
+			throws LiquibaseException {
+		checkFacade();
+		facade.rollback(tagToRollBackTo, contexts);
+	}
+
 	public void rollback(String tagToRollBackTo, String contexts, Writer output)
 			throws LiquibaseException {
 		checkFacade();
 		facade.rollback(tagToRollBackTo, contexts, output);
+	}
+
+	public void rollback(Date dateToRollBackTo, String contexts)
+			throws LiquibaseException {
+		checkFacade();
+		facade.rollback(dateToRollBackTo, contexts);
 	}
 
 	public void rollback(Date dateToRollBackTo, String contexts, Writer output)
@@ -138,6 +187,17 @@ public class LiquibaseImpl implements liquibase.integration.osgi.Liquibase {
 	public void forceReleaseLocks() throws LiquibaseException {
 		checkFacade();
 		facade.forceReleaseLocks();
+	}
+
+	public List<String> listUnrunChangeSets(String contexts)
+			throws LiquibaseException {
+		checkFacade();
+		List<ChangeSet> changeSets = facade.listUnrunChangeSets(contexts);
+		List<String> changeSetInfo = new ArrayList<String>(changeSets.size());
+		for (ChangeSet changeSet : changeSets) {
+			changeSetInfo.add(changeSet.toString(false));
+		}
+		return changeSetInfo;
 	}
 
 	public void reportStatus(boolean verbose, String contexts, Writer output)

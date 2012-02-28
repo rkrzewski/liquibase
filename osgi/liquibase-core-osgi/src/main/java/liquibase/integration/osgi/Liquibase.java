@@ -3,6 +3,7 @@ package liquibase.integration.osgi;
 import java.io.Writer;
 import java.sql.Connection;
 import java.util.Date;
+import java.util.List;
 
 import liquibase.exception.LiquibaseException;
 
@@ -49,15 +50,28 @@ public interface Liquibase {
 	void open(String changeLogFile, Connection connection)
 			throws LiquibaseException;
 
+	void update(String contexts) throws LiquibaseException;
+
 	void update(String contexts, Writer output) throws LiquibaseException;
 
+	void update(int changesToApply, String contexts) throws LiquibaseException;
+
 	void update(int changesToApply, String contexts, Writer output)
+			throws LiquibaseException;
+
+	void rollback(int changesToRollback, String contexts)
 			throws LiquibaseException;
 
 	void rollback(int changesToRollback, String contexts, Writer output)
 			throws LiquibaseException;
 
+	void rollback(String tagToRollBackTo, String contexts)
+			throws LiquibaseException;
+
 	void rollback(String tagToRollBackTo, String contexts, Writer output)
+			throws LiquibaseException;
+
+	void rollback(Date dateToRollBackTo, String contexts)
 			throws LiquibaseException;
 
 	void rollback(Date dateToRollBackTo, String contexts, Writer output)
@@ -85,6 +99,8 @@ public interface Liquibase {
 	void reportLocks(Writer output) throws LiquibaseException;
 
 	void forceReleaseLocks() throws LiquibaseException;
+
+	List<String> listUnrunChangeSets(String contexts) throws LiquibaseException;
 
 	void reportStatus(boolean verbose, String contexts, Writer output)
 			throws LiquibaseException;
