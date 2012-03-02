@@ -8,9 +8,9 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<groupId>org.liquibase.samples</groupId>
-	<artifactId>liquibase-osgi-sample-jpa</artifactId>
+	<artifactId>osgi-jpa</artifactId>
 	<packaging>bundle</packaging>
-    <name>Liquibase for OSGi - JPA sample</name>
+    	<name>Liquibase for OSGi - JPA sample</name>
     
 	<dependencies>
 		<dependency>
@@ -23,7 +23,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.liquibase</groupId>
-			<artifactId>liquibase-core-osgi</artifactId>
+			<artifactId>liquibase-osgi</artifactId>
 			<version>${project.version}</version>
 			<type>bundle</type>
 		</dependency>

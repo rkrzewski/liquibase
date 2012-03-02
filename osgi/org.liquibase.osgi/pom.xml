@@ -4,7 +4,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>liquibase-core-osgi</artifactId>
+    <artifactId>liquibase-osgi</artifactId>
     <name>Liquibase Core for OSGi environment</name>
     <packaging>bundle</packaging>
 

@@ -1,4 +1,4 @@
-package liquibase.samples.osgi;
+package liquibase.samples.osgi.jdbc;
 
 import static aQute.bnd.annotation.component.ConfigurationPolicy.require;
 
