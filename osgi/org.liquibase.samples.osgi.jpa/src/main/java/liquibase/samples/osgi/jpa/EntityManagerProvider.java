@@ -1,7 +1,5 @@
 package liquibase.samples.osgi.jpa;
 
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Dictionary;
@@ -107,7 +105,6 @@ public class EntityManagerProvider {
 		Connection conn = dataSource.getConnection();
 		try {
 			liquibase.open(changeLogFile, conn);
-			Writer out = new OutputStreamWriter(System.out);
 			liquibase.update(null);
 		} finally {
 			if(conn != null) {
