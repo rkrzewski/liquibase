@@ -3,7 +3,6 @@ package liquibase.integration.osgi.impl;
 import java.util.Hashtable;
 
 import liquibase.integration.osgi.Liquibase;
-import liquibase.resource.ResourceAccessor;
 import liquibase.servicelocator.LiquibaseService;
 import liquibase.servicelocator.ServiceLocator;
 
