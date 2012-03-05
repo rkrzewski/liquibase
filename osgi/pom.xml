@@ -16,7 +16,8 @@
     </parent>
 
     <modules>
-        <module>liquibase-osgi-core</module>
+        <module>org.liquibase.osgi</module>
+        <module>org.liquibase.osgi.integration-test</module>
     </modules>
 
     <dependencyManagement>
