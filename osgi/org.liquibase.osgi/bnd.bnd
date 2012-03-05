@@ -18,7 +18,8 @@ Export-Package: liquibase.integration.osgi;version=1,\
 	liquibase.statement;version=1,\
 	liquibase.statement.core;version=1,\
 	liquibase.util.csv.opencsv.bean;version=1,\
-	liquibase.util.xml;version=1
+	liquibase.util.xml;version=1,\
+	liquibase.util.ui;version=1
 Private-Package: liquibase,\
 	liquibase.*
 Liquibase-Package: liquibase.change.core,\
