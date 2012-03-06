@@ -55,7 +55,7 @@ public class SimpleIntegrationTest {
 		}
 		Connection conn = openConnection();
 		try {
-			liquibase.open("blank.xml", conn);
+			liquibase.open("blank.changelog.xml", conn);
 			List<String> pending = liquibase.listUnrunChangeSets(null);
 			System.out.println("detected " + pending.size()
 					+ " pending changes");
