@@ -1,0 +1,2 @@
+Private-Package: liquibase.ext.samplesqlgenerator
+Liquibase-Package: liquibase.ext.samplesqlgenerator

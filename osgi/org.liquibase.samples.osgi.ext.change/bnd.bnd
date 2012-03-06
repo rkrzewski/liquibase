@@ -1,0 +1,2 @@
+Private-Package: liquibase.ext.changesample
+Liquibase-Package: liquibase.ext.changesample
