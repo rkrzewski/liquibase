@@ -28,14 +28,10 @@ public class JdbcTest {
 		Connection conn = dataSource.getConnection();
 		Statement stmt = conn.createStatement();
 		ResultSet rset = stmt
-				.executeQuery("select id, name, active from department");
-		int count = 0;
-		while (rset.next()) {
-			System.out.println(format("department %d %s %s", rset.getInt(1), rset
-					.getString(2), rset.getBoolean(3) ? "active" : "inactive"));
-			count++;
-		}
-		System.out.println(format("found %d record(s)", count));
+				.executeQuery("select count(*) from fruit where color='green'");
+		assert rset.isBeforeFirst();
+		rset.next();
+		System.out.println(format("found %d green fruit", rset.getInt(1)));
 		rset.close();
 		stmt.close();
 		conn.close();

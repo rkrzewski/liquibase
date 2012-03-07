@@ -2,8 +2,6 @@ package liquibase.samples.osgi.jdbc;
 
 import static aQute.bnd.annotation.component.ConfigurationPolicy.require;
 
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.sql.Connection;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -57,8 +55,8 @@ public class DataSourceProvider {
 			Connection conn = ds.getConnection();
 			String changeLogFile = compProps.get("liquibase.changelog");
 			liquibase.open(changeLogFile, conn);
-			Writer out = new OutputStreamWriter(System.out);
-			liquibase.update(null, out);
+			
+			liquibase.update(null);
 			conn.close();
 
 			Dictionary<String, Object> dsProps = new Hashtable<String, Object>();
