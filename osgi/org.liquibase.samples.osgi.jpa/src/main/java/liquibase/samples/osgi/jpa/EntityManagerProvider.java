@@ -1,8 +1,5 @@
 package liquibase.samples.osgi.jpa;
 
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
@@ -32,9 +29,9 @@ public class EntityManagerProvider {
 
 	private EntityManagerFactoryBuilder emfb;
 	
-	private ServiceRegistration<EntityManagerFactory> emfReg;
+	private Map<String, Object> emfbProps;
 
-	private Map<String, Object> emfbProperties;
+	private ServiceRegistration<EntityManagerFactory> emfReg;
 
 	@Reference
 	protected void setLiquibase(Liquibase liquibase) {
@@ -48,9 +45,9 @@ public class EntityManagerProvider {
 
 	@Reference
 	protected void setEntityManagerFactoryBuilder(
-			EntityManagerFactoryBuilder emfb, Map<String,Object> emfbProperties) {
+			EntityManagerFactoryBuilder emfb, Map<String, Object> emfbProperties) {
 		this.emfb = emfb;
-		this.emfbProperties = emfbProperties;
+		this.emfbProps = emfbProperties;
 	}
 
 	@Activate
@@ -63,7 +60,7 @@ public class EntityManagerProvider {
 			e.printStackTrace();
 			return;
 		}
-		
+
 		try {
 			SchemaUpdate.updateSchema(ds, liquibase, System.out, compProps);
 		} catch (Exception e) {
@@ -71,11 +68,18 @@ public class EntityManagerProvider {
 			e.printStackTrace();
 			return;
 		}
-		
-		Dictionary<String, Object> emfProperties = createEmfProperties(compProps);
-		EntityManagerFactory emf = createEntityManagerFactory(emfProperties);
-		
-		emfReg = context.registerService(EntityManagerFactory.class, emf, emfProperties);
+
+		try {
+			Hashtable<String, Object> emfProperties = createEmfProperties(
+					emfbProps, compProps);
+			EntityManagerFactory emf = emfb
+					.createEntityManagerFactory(emfProperties);
+			emfReg = context.registerService(EntityManagerFactory.class, emf,
+					emfProperties);
+		} catch (Exception e) {
+			System.out.println("JPA unit initialization failed");
+			e.printStackTrace();
+		}
 	}
 
 	@Deactivate
@@ -85,27 +89,19 @@ public class EntityManagerProvider {
 		}
 	}
 
-	private EntityManagerFactory createEntityManagerFactory(
-			Dictionary<String, Object> emfProperties) {
-		Map<String, Object> emfPropertiesMap = new HashMap<String, Object>();
-		Enumeration<String> keys = emfProperties.keys();
-		while(keys.hasMoreElements()) {
-			String key = keys.nextElement();
-			emfPropertiesMap.put(key, emfProperties.get(key));
-		}
-		return emfb.createEntityManagerFactory(emfPropertiesMap);
-	}
-	
-	private Dictionary<String, Object> createEmfProperties(
-			Map<String, String> compProps) {
-		Dictionary<String, Object> emfProps = new Hashtable<String, Object>();
+	private Hashtable<String, Object> createEmfProperties(
+			Map<String, Object> emfbProperties, Map<String, String> compProps) {
+		Hashtable<String, Object> emfProps = new Hashtable<String, Object>();
+
 		for (String key : compProps.keySet()) {
 			if (key.startsWith("jdbc.")) {
 				emfProps.put("javax.persistence." + key, compProps.get(key));
 			}
 		}
-		for(String key : emfbProperties.keySet()) {
-			if(key.startsWith("osgi.unit.") || key.equals("osgi.managed.bundles")) {
+
+		for (String key : emfbProperties.keySet()) {
+			if (key.startsWith("osgi.unit.")
+					|| key.equals("osgi.managed.bundles")) {
 				emfProps.put(key, emfbProperties.get(key));
 			}
 		}
