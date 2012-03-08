@@ -1,19 +1,18 @@
 package liquibase.samples.osgi.jpa;
 
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
-import liquibase.exception.LiquibaseException;
 import liquibase.integration.osgi.Liquibase;
+import liquibase.integration.osgi.SchemaUpdate;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -60,18 +59,19 @@ public class EntityManagerProvider {
 	protected void activate(BundleContext context, Map<String, String> compProps) {
 		DataSource ds;
 		try {
-			ds = createDataSource(compProps);
+			ds = SchemaUpdate.createDataSource(dsf, compProps);
 		} catch (Exception e) {
 			System.out.println("filed to create DataSource");
 			e.printStackTrace();
 			return;
 		}
 		
-		String changeLogFile = compProps.get("liquibase.changelog");
 		try {
-			updateSchema(ds, changeLogFile);
+			PrintWriter pw = new PrintWriter(
+					new OutputStreamWriter(System.out), true);
+			SchemaUpdate.updateSchema(ds, liquibase, pw, compProps);
 		} catch (Exception e) {
-			System.out.println("filed to update database schema");
+			System.out.println("database schema validation / update failed");
 			e.printStackTrace();
 			return;
 		}
@@ -86,30 +86,6 @@ public class EntityManagerProvider {
 	protected void deactivate() {
 		if (emfReg != null) {
 			emfReg.unregister();
-		}
-	}
-
-	private DataSource createDataSource(Map<String, String> compProps)
-			throws SQLException {
-		Properties dsfProps = new Properties();
-		for (String key : compProps.keySet()) {
-			if (key.startsWith("jdbc.")) {
-				dsfProps.put(key.substring(5), compProps.get(key));
-			}
-		}
-		return dsf.createDataSource(dsfProps);
-	}
-
-	private void updateSchema(DataSource dataSource, String changeLogFile)
-			throws SQLException, LiquibaseException {
-		Connection conn = dataSource.getConnection();
-		try {
-			liquibase.open(changeLogFile, conn);
-			liquibase.update(null);
-		} finally {
-			if(conn != null) {
-				conn.close();
-			}
 		}
 	}
 

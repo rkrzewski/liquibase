@@ -14,11 +14,11 @@ import aQute.bnd.annotation.component.Component;
 import aQute.bnd.annotation.component.Reference;
 
 @Component
-public class JdbcTest {
+public class Client {
 
 	private DataSource dataSource;
 
-	@Reference(target = "(liquibase.updated=true)")
+	@Reference
 	protected void setDataSource(DataSource dataSource) {
 		this.dataSource = dataSource;
 	}

@@ -2,15 +2,14 @@ package liquibase.samples.osgi.jdbc;
 
 import static aQute.bnd.annotation.component.ConfigurationPolicy.require;
 
-import java.sql.Connection;
-import java.util.Dictionary;
-import java.util.Hashtable;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.sql.DataSource;
 
 import liquibase.integration.osgi.Liquibase;
+import liquibase.integration.osgi.SchemaUpdate;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
@@ -41,29 +40,27 @@ public class DataSourceProvider {
 	}
 
 	@Activate
-	protected void activate(BundleContext context, Map<String, String> compProps) {
-		Properties dsfProps = new Properties();
-		for(String key : compProps.keySet()) {
-			if(key.startsWith("jdbc.")) {
-				dsfProps.put(key.substring(5), compProps.get(key));
-			}
-		}
-
+	protected void activate(BundleContext context,
+			Map<String, String> properties) {
+		DataSource ds;
 		try {
-			DataSource ds = dsf.createDataSource(dsfProps);
-
-			Connection conn = ds.getConnection();
-			String changeLogFile = compProps.get("liquibase.changelog");
-			liquibase.open(changeLogFile, conn);
-			
-			liquibase.update(null);
-			conn.close();
-
-			Dictionary<String, Object> dsProps = new Hashtable<String, Object>();
-			dsProps.put("liquibase.updated", "true");
-			dsReg = context.registerService(DataSource.class, ds, dsProps);
+			ds = SchemaUpdate.createDataSource(dsf, properties);
 		} catch (Exception e) {
+			System.out.println("filed to create DataSource");
 			e.printStackTrace();
+			return;
+		}
+		
+		try {
+			PrintWriter pw = new PrintWriter(
+					new OutputStreamWriter(System.out), true);
+			SchemaUpdate.updateSchema(ds, liquibase, pw, properties);
+
+			dsReg = context.registerService(DataSource.class, ds, null);
+		} catch (Exception e) {
+			System.out.println("database schema validation / update failed");
+			e.printStackTrace();
+			return;
 		}
 	}
 
