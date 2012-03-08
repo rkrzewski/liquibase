@@ -2,8 +2,6 @@ package liquibase.samples.osgi.jdbc;
 
 import static aQute.bnd.annotation.component.ConfigurationPolicy.require;
 
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -52,9 +50,7 @@ public class DataSourceProvider {
 		}
 		
 		try {
-			PrintWriter pw = new PrintWriter(
-					new OutputStreamWriter(System.out), true);
-			SchemaUpdate.updateSchema(ds, liquibase, pw, properties);
+			SchemaUpdate.updateSchema(ds, liquibase, System.out, properties);
 
 			dsReg = context.registerService(DataSource.class, ds, null);
 		} catch (Exception e) {

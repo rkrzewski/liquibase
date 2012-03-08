@@ -1,7 +1,5 @@
 package liquibase.samples.osgi.jpa;
 
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -67,9 +65,7 @@ public class EntityManagerProvider {
 		}
 		
 		try {
-			PrintWriter pw = new PrintWriter(
-					new OutputStreamWriter(System.out), true);
-			SchemaUpdate.updateSchema(ds, liquibase, pw, compProps);
+			SchemaUpdate.updateSchema(ds, liquibase, System.out, compProps);
 		} catch (Exception e) {
 			System.out.println("database schema validation / update failed");
 			e.printStackTrace();

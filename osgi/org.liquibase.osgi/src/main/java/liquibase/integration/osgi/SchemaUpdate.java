@@ -2,6 +2,8 @@ package liquibase.integration.osgi;
 
 import static java.lang.String.format;
 
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -181,5 +183,17 @@ public class SchemaUpdate {
 				conn.close();
 			}
 		}
+	}
+
+	/**
+	 * An overloaded variant of
+	 * {@link #updateSchema(DataSource, Liquibase, PrintWriter, Map)} that takes
+	 * a {@code PrintStream} argument instead of a {@code PrintWriter}.
+	 */
+	public static boolean updateSchema(DataSource dataSource,
+			Liquibase liquibase, PrintStream ps, Map<String, String> properties)
+			throws SQLException, LiquibaseException {
+		return updateSchema(dataSource, liquibase, new PrintWriter(
+				new OutputStreamWriter(System.out), true), properties);
 	}
 }
