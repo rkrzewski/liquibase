@@ -18,6 +18,7 @@ import javax.inject.Inject;
 import liquibase.exception.LiquibaseException;
 
 import org.apache.derby.jdbc.EmbeddedDriver;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Option;
@@ -38,6 +39,7 @@ public class SimpleIntegrationTest {
 				repository("https://raw.github.com/rkrzewski/liquibase/master/osgi/cnf/jdbc@id=liquibase-gemini-dbconnect"),
 				junitBundles(),
 				mavenBundle(maven("org.liquibase", "liquibase-osgi")),
+				mavenBundle(maven("org.osgi", "org.osgi.enterprise", "4.2.0")),
 				mavenBundle(maven("org.eclipse", "org.apache.derby", "10.8.2.2")));
 	}
 
@@ -61,7 +63,6 @@ public class SimpleIntegrationTest {
 					+ " pending changes");
 		} finally {
 			conn.close();
-			shutdownDB();
 		}
 	}
 
@@ -71,7 +72,8 @@ public class SimpleIntegrationTest {
 				new Properties());
 	}
 
-	private void shutdownDB() throws SQLException {
+	@After
+	public void shutdownDB() throws SQLException {
 		Driver driver = new EmbeddedDriver();
 		try {
 			driver.connect("jdbc:derby:target/derby/db;shutdown=true",

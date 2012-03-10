@@ -38,6 +38,7 @@ public class ManifestHeadersTest {
 	@Configuration
 	public Option[] paxExamConfig() {
 		return options(junitBundles(),
+				mavenBundle(maven("org.osgi", "org.osgi.enterprise", "4.2.0")),
 				mavenBundle(maven("org.liquibase", "liquibase-osgi")));
 	}
 
