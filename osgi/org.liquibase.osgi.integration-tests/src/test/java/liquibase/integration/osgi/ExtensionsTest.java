@@ -35,6 +35,7 @@ public class ExtensionsTest {
 		return options(
 				repository("https://raw.github.com/rkrzewski/liquibase/master/osgi/cnf/jdbc@id=liquibase-gemini-dbconnect"),
 				junitBundles(),
+				mavenBundle(maven("org.osgi", "org.osgi.enterprise", "4.2.0")),
 				mavenBundle(maven("org.liquibase", "liquibase-osgi")),
 				mavenBundle(maven("org.liquibase.samples", "osgi-ext-change")),
 				mavenBundle(maven("org.liquibase.samples",
