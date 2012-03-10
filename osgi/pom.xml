@@ -17,7 +17,12 @@
 
     <modules>
         <module>org.liquibase.osgi</module>
-        <module>org.liquibase.osgi.integration-test</module>
+        <module>org.liquibase.samples.osgi.ext.change</module>
+        <module>org.liquibase.samples.osgi.ext.changewithnestedtags</module>
+        <module>org.liquibase.samples.osgi.ext.sqlgenerator</module>
+        <module>org.liquibase.samples.osgi.jdbc</module>
+        <module>org.liquibase.samples.osgi.jpa</module>
+        <module>org.liquibase.osgi.integration-tests</module>
     </modules>
 
     <dependencyManagement>
